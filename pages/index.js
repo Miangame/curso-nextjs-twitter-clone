@@ -1,11 +1,33 @@
+import {useEffect, useState} from 'react'
+
 import Head from 'next/head'
-import Link from 'next/link'
-import {useRouter} from 'next/router'
-import AppLayout from '../components/AppLayout'
-// devit
+
+import AppLayout from 'components/AppLayout'
+import Button from 'components/Button'
+import GitHub from 'components/Icons/GitHub'
+import Avatar from 'components/Avatar'
+
+import {onAuthStateChange, loginWithGitHub} from 'firebase/client'
+
+import {colors} from 'styles/theme'
 
 export default function Home() {
-  const router = useRouter()
+  const [user, setUser] = useState(undefined)
+
+  console.log(user)
+
+  const handleLoginGithub = async () => {
+    loginWithGitHub().then(result => {
+      const {credential, user} = result
+      const {accessToken} = credential
+
+      console.log(user, accessToken)
+    })
+  }
+
+  useEffect(() => {
+    onAuthStateChange(setUser)
+  }, [])
 
   return (
     <>
@@ -15,37 +37,50 @@ export default function Home() {
       </Head>
 
       <AppLayout>
-        <h1>
-          <a href="https://nextjs.org">devter</a>
-        </h1>
-        <nav>
-          <Link href='/timeline'>
-            <a>
-              timeline
-            </a>
-          </Link>
-        </nav>
+        <div>
+          <img src='/devter-logo.png' />
+          <h1>Devter</h1>
+          <h2>Talk about development<br /> with developers 👨‍💻👩‍💻</h2>
+          {
+            user && <>
+              <Avatar src={user.photoURL} />
+              <span>Miguel Ángel Durán</span>
+            </>
+          }
+          {
+            user === null && 
+            <Button onClick={handleLoginGithub}>
+              <GitHub fill='#fff' height={32} width={32} />
+              Login with GitHub
+            </Button>
+          }
+
+        </div>
       </AppLayout>
 
       <style jsx>{`
         h1 {
+          color: ${colors.secondary};
+          font-weight: 800;
+          margin-bottom: 0;
+        }
+
+        h2 {
+          color: ${colors.primary};
+          font-size: 18px;
+          margin-top: 8px;
           text-align: center;
-          font-size: 48px;
         }
 
-        nav {
-          font-size: 24px;
-          text-align: center;
+        img {
+          width: 120px;
         }
 
-        .another-title {
-          color: #333;
-          font-size: 24px;
-        }
-
-        a {
-          color: orange;
-          text-decoration: none;
+        div {
+          display: grid;
+          height: 100%;
+          place-content: center;
+          place-items: center;
         }
       `}</style>
     </>
